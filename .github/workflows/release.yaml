@@ -1,0 +1,94 @@
+name: release
+on: 
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build_and_release:
+    name: build_and_release
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: clone
+        uses: actions/checkout@v2
+      - name: install depends
+        run: |
+          go mod download
+          mkdir artifacts
+      - name: build
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o artifacts/sms-modem-reader-amd64 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o artifacts/sms-modem-reader-386 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o artifacts/sms-modem-reader-arm64 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -o artifacts/sms-modem-reader-arm7 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -o artifacts/sms-modem-reader-arm6 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=5 go build -o artifacts/sms-modem-reader-arm5 .
+      - name: Upload relerase amd64
+        id: upload-release-asset-amd64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/sms-modem-reader-amd64
+          asset_name: sms-modem-reader-amd64
+          asset_content_type: application/x-elf
+      - name: Upload relerase 386
+        id: upload-release-asset-386
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/sms-modem-reader-386
+          asset_name: sms-modem-reader-386
+          asset_content_type: application/x-elf
+      - name: Upload relerase arm64
+        id: upload-release-asset-arm64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/sms-modem-reader-arm64
+          asset_name: sms-modem-reader-arm64
+          asset_content_type: application/x-elf
+      - name: Upload relerase arm7
+        id: upload-release-asset-arm7
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/sms-modem-reader-arm7
+          asset_name: sms-modem-reader-arm7
+          asset_content_type: application/x-elf
+      - name: Upload relerase arm6
+        id: upload-release-asset-arm6
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/sms-modem-reader-arm6
+          asset_name: sms-modem-reader-arm6
+          asset_content_type: application/x-elf
+      - name: Upload relerase arm5
+        id: upload-release-asset-arm5
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/sms-modem-reader-arm5
+          asset_name: sms-modem-reader-arm5
+          asset_content_type: application/x-elf

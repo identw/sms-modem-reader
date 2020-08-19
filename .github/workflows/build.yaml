@@ -1,0 +1,29 @@
+name: build
+on: 
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    name: build golang
+    runs-on: ubuntu-20.04
+    steps:
+      - name: clone
+        uses: actions/checkout@v2
+      - name: install depends
+        run: |
+          go mod download
+          mkdir artifacts
+      - name: build
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o artifacts/sms-mode-reader-amd64 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o artifacts/sms-mode-reader-386 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o artifacts/sms-mode-reader-arm8 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -o artifacts/sms-mode-reader-arm7 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -o artifacts/sms-mode-reader-arm6 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=5 go build -o artifacts/sms-mode-reader-arm5 .
+      - name: Save artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: sms-mode-reader
+          path: artifacts/*
