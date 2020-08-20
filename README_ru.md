@@ -1,7 +1,69 @@
 # Sms modem reader
-Приложение считывает sms из gsm модема huawei (протестировано на моделях: E173, E352b) c помощью [AT комманд](http://download-c.huawei.com/download/downloadCenter?downloadId=51047&version=120450&siteCode) и отправляет эти sms на указанный webhook c помощью post запроса. А также периодически проверяет  баланс и экспортирует его в метрики на uri /metrics в формате prometheus.
+Приложение считывает sms из gsm модема huawei (протестировано на моделях: E173, E352b) c помощью [AT комманд](http://download-c.huawei.com/download/downloadCenter?downloadId=51047&version=120450&siteCode) и отправляет эти sms на указанный webhook c помощью post запроса. А также периодически проверяет баланс и экспортирует его в метрики на uri /metrics в формате prometheus.
 
 ## Установка
+```bash
+curl -L https://github.com/identw/sms-modem-reader/releases/latest/download/sms-modem-reader-amd64 -o /usr/local/bin/sms-modem-reader
+chmod +x /usr/local/bin/sms-modem-reader
+```
+Для запуска выполните:
+```bash
+/usr/local/bin/sms-modem-reader
+```
+Если нужно поменять опции по умолчанию, то экспортируйте нужные [переменные среды](#переменные-среды). Например:
+```bash
+export WEBHOOK_URL=https://example.com/webhook
+export BALANCE_USSD="*105#"
+/usr/local/bin/sms-modem-reader
+```
+
+Для удобства можно создать systemd сервис:
+`/etc/systemd/system/sms-modem-reader.service`:
+```
+[Unit]
+Description=Sms modem reader
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+EnvironmentFile=-/etc/default/sms-modem-reader
+ExecStart=/usr/local/bin/sms-modem-reader
+Restart=on-failure
+```
+Включаем сервис:
+```bash
+systemctl daemon-reload
+systemctl enable sms-modem-reader
+```
+
+В этом файле мы можете указать любые доступные [переменные среды](#переменные-среды)
+`/etc/default/sms-modem-reader`:
+```
+ WEBHOOK_URL=https://example.com/webhook
+ BALANCE_USSD="*105#"
+```
+
+
+Если ваш модем не работает в режиме модема, то его можно переключить в этот режим с помощью программы `usb_modeswitch` (пакет `usb-modeswitch` в ubuntu/debian). Для этого можно добавить еще одно udev правило:
+
+`/etc/udev/rules.d/99-sms-modem-reader.rules`:
+```
+ATTRS{idVendor}=="12d1",ATTRS{idProduct}=="1506",RUN+="/usr/sbin/usb_modeswitch -v 12d1 -p 1506",TAG+="systemd"
+```
+Все udev аттрибуты можно посмотреть с помощью команды `udevadm info -a /dev/ttyUSB0`
+
+`idVendor` и `idProduct` можно узнать с помощью `lsusb`. Например:
+```
+# lsusb
+Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 002: ID 12d1:1506 Huawei Technologies Co., Ltd. Modem/Networkcard
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+...
+```
+`12d1` - idVendor  
+`1506` - idProduct  
+
 
 ## webhook
 Указать url можно с помощью переменной среды `WEBHOOK_URL`. Например: `export WEBHOOK_URL=https://example.com/sms`

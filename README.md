@@ -2,6 +2,67 @@
 The application reads sms from the gsm huawei modem (tested on models: E173, E352b) using [AT commands](http://download-c.huawei.com/download/downloadCenter?downloadId=51047&version=120450&siteCode) and sends these sms to the specified webhook using the post request. It also periodically checks the balance and exports it to metrics on uri /metrics in prometheus format.
 
 ## Setup
+```bash
+curl -L https://github.com/identw/sms-modem-reader/releases/latest/download/sms-modem-reader-amd64 -o /usr/local/bin/sms-modem-reader
+chmod +x /usr/local/bin/sms-modem-reader
+```
+
+To run:
+```bash
+/usr/local/bin/sms-modem-reader
+```
+If you need to change the default options, then export the required [environment variables](#environment-variables). For example:
+```bash
+export WEBHOOK_URL=https://example.com/webhook
+export BALANCE_USSD="*105#"
+/usr/local/bin/sms-modem-reader
+```
+
+For convenience, you can create a systemd service:
+`/etc/systemd/system/sms-modem-reader.service`:
+```
+[Unit]
+Description=Sms modem reader
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+EnvironmentFile=-/etc/default/sms-modem-reader
+ExecStart=/usr/local/bin/sms-modem-reader
+Restart=on-failure
+```
+
+Enable service:
+```bash
+systemctl daemon-reload
+systemctl enable sms-modem-reader
+```
+
+In this file, you can specify any available [environment variables](#environment-variables)
+`/etc/default/sms-modem-reader`:
+```
+ WEBHOOK_URL=https://example.com/webhook
+ BALANCE_USSD="*105#"
+```
+
+If your modem does not work in modem mode, you can switch it to this mode using the program `usb_modeswitch` (package` usb-modeswitch` in ubuntu/debian). To do this, you can add another udev rule:
+`/etc/udev/rules.d/99-sms-modem-reader.rules`:
+```
+ATTRS{idVendor}=="12d1",ATTRS{idProduct}=="1506",RUN+="/usr/sbin/usb_modeswitch -v 12d1 -p 1506",TAG+="systemd"
+```
+
+All udev attributes can be viewed with the command `udevadm info -a / dev / ttyUSB0`
+
+`idVendor` and` idProduct` can be found with `lsusb`. For example:
+```
+# lsusb
+...
+Bus 003 Device 002: ID 12d1:1506 Huawei Technologies Co., Ltd. Modem/Networkcard
+...
+```
+`12d1` - idVendor  
+`1506` - idProduct  
 
 ## webhook
 You can specify url using the environment variable `WEBHOOK_URL`. For example: `export WEBHOOK_URL=https://example.com/sms`
@@ -28,7 +89,7 @@ The balance is checked using a USSD request, which can be specified through the 
   * `SERIAL_PARITY` (default: "N") - indicates the presence and type of parity bit. Possible values: "N", "O", "E", "M", "S"
   * `SERIAL_SIZE` (default: "8") - the number of bits that frame start and stop bits
 
-## prometheus метрики
+## prometheus metrics
 Metrics can be obtained at url: http://METRIC_LISTEN_IP:METRIC_PORT/metrics
 
 
