@@ -219,7 +219,11 @@ func readSmsByTimer(so *sms.SmsOperator) {
 			}
 			client := &http.Client{}
 			resp, err := client.Do(req)
-			if err != nil || resp.Status != "200" {
+			if err != nil || ( resp.StatusCode >= 300 || resp.StatusCode < 200) {
+				if err != nil {
+					log.Printf("Error send webhook: %s", err)
+				}
+				log.Printf("Send webhook wrong reponse code, status code: %d (expect 2xx)", resp.StatusCode)
 				promWebhookLastStatus.Set(1)
 				continue
 			}

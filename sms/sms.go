@@ -170,6 +170,10 @@ func (so *SmsOperator) ReadAllSms() (error) {
 				so.Messages[message.Time] = m
 			} else {
 				so.Messages[message.Time] = message
+				m := so.Messages[message.Time]
+				m.Ids = make([]string, 0)
+				m.Ids = append(m.Ids, message.Id)
+				so.Messages[message.Time] = m
 			}
 		}
 	}
