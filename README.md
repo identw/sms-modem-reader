@@ -83,6 +83,9 @@ The balance is checked using a USSD request, which can be specified through the 
   * `INTERVAL_READ_SMS` (default: "10") - interval in seconds with which you want to check incoming sms
   * `INTERVAL_CHECK_BALANCE` (default: "86400") - interval in seconds with which to check the current balance
   * `WEBHOOK_URL` (default: "http://127.0.0.1/webhook") - url where sms messages will be sent
+  * `WEBHOOK_BASIC_AUTH` (умолчание: "false") - enables / disables http authentication for sending webhooks
+  * `WEBHOOK_BASIC_AUTH_USER` (умолчание: "admin") - when http authentication is enabled, this user is used
+  * `WEBHOOK_BASIC_AUTH_PASS` (умолчание: "") - when http authentication is enabled, this password is used
   * `SERIAL_FILE` (default: "/dev/ttyUSB0") - serial port file
   * `SERIAL_BAUD` (default: "9600") - serial port baud rate (bps)
   * `SERIAL_STOP_BITS` (default: "1") - the number of stop bits. Possible values: "1", "2", "15"

@@ -30,8 +30,6 @@ var (
 	IntervalReadSms int64 = 10
 	// IntervalCheckBalance (env: INTERVAL_CHECK_BALANCE) - interval check balance in seconds
 	IntervalCheckBalance int64 = 24 * 3600
-	// WebhookURL (env: WEBHOOK_URL) - webhook url
-	WebhookURL = "http://127.0.0.1/webhook"
 	// SerialFile (env: SERIAL_FILE) - serial file
 	SerialFile = "/dev/ttyUSB0"
 	// SerialBaud (env: SERIAL_BAUD) - serial baud rate
@@ -42,6 +40,14 @@ var (
 	SerialParity byte = 'N'
 	// SerialSize (env: SERIAL_SIZE) - serial bits  
 	SerialSize byte = 8
+	// WebhookURL (env: WEBHOOK_URL) - webhook url
+	WebhookURL = "http://127.0.0.1/webhook"
+	// WebhookBasicAuth - enable/disable basic auth
+	WebhookBasicAuth = false
+	// WebhookBasicAuthUser - user for basic auth
+	WebhookBasicAuthUser = "admin"
+	// WebhookBasicAuthPass - password 
+	WebhookBasicAuthPass = ""
 
 	promReadSmsLastStatus = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "sms_reader_sms_last_status",
@@ -98,9 +104,6 @@ func main() {
 			log.Fatalf("ParseInt error env 'INTERVAL_CHECK_BALANCE': %s", err)
 		}
 	}
-	if os.Getenv("WEBHOOK_URL") != "" {
-		WebhookURL = os.Getenv("WEBHOOK_URL")
-	}
 	if os.Getenv("SERIAL_FILE") != "" {
 		SerialFile = os.Getenv("SERIAL_FILE")
 	}
@@ -139,6 +142,21 @@ func main() {
 			log.Fatalf("ParseInt error env 'SERIAL_SIZE': %s", err)
 		}
 		SerialSize = byte(tmp)
+	}
+	if os.Getenv("WEBHOOK_URL") != "" {
+		WebhookURL = os.Getenv("WEBHOOK_URL")
+	}
+	if os.Getenv("WEBHOOK_BASIC_AUTH") != "" {
+		WebhookBasicAuth, err = strconv.ParseBool(os.Getenv("WEBHOOK_BASIC_AUTH"))
+		if err != nil {
+			log.Fatalf("ParseBool error env 'WEBHOOK_BASIC_AUTH': %s", err)
+		}
+	}
+	if os.Getenv("WEBHOOK_BASIC_AUTH_USER") != "" {
+		WebhookBasicAuthUser = os.Getenv("WEBHOOK_BASIC_AUTH_USER")
+	}
+	if os.Getenv("WEBHOOK_BASIC_AUTH_PASS") != "" {
+		WebhookBasicAuthPass = os.Getenv("WEBHOOK_BASIC_AUTH_PASS")
 	}
 	
 	// init sms operator
@@ -196,6 +214,9 @@ func readSmsByTimer(so *sms.SmsOperator) {
 			jsonStr, _ := json.Marshal(message)
 			req, err := http.NewRequest("POST", WebhookURL, bytes.NewBuffer(jsonStr))
 			req.Header.Set("Content-Type", "application/json")
+			if WebhookBasicAuth {
+				req.SetBasicAuth(WebhookBasicAuthUser, WebhookBasicAuthPass)
+			}
 			client := &http.Client{}
 			resp, err := client.Do(req)
 			if err != nil || resp.Status != "200" {
