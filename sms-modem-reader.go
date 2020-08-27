@@ -192,6 +192,7 @@ func readSmsByTimer(so *sms.SmsOperator) {
 		if err != nil {
 			promReadSmsLastStatus.Set(1)
 			log.Print(err)
+			mu.Unlock()
 			time.Sleep(10 * time.Second)
 			so.Init()
 			continue
