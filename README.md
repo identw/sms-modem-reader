@@ -79,7 +79,7 @@ The balance is checked using a USSD request, which can be specified through the 
   * `METRIC_PORT` (default: "40111") - port for prometheus metrics
   * `METRIC_LISTEN_IP` (default: "0.0.0.0") - ip address of the interface for prometheus metrics
   * `BALANCE_USSD` (default: "*122#") - USSD request to check balance
-  * `BALANCE_REGEXP` (default: "^.*составляет ([0-9]+(\.[0-9]+)?) руб.*$") - regex to pull the current balance out of the message. The current balance will be the first captured group in the regular expression (that is, the first parentheses). The syntax used is https://golang.org/pkg/regexp/syntax/
+  * `BALANCE_REGEXP` (default: "^.*составляет (-?[0-9]+(\.[0-9]+)?) руб.*$") - regex to pull the current balance out of the message. The current balance will be the first captured group in the regular expression (that is, the first parentheses). The syntax used is https://golang.org/pkg/regexp/syntax/
   * `INTERVAL_READ_SMS` (default: "10") - interval in seconds with which you want to check incoming sms
   * `INTERVAL_CHECK_BALANCE` (default: "86400") - interval in seconds with which to check the current balance
   * `WEBHOOK_URL` (default: "http://127.0.0.1/webhook") - url where sms messages will be sent

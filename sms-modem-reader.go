@@ -25,7 +25,7 @@ var (
 	// BalanceUSSD (env: BALANCE_USSD) - ussd for check balance - check balance (defailt for rostelecom)
 	BalanceUSSD = "*122#"
 	// BalanceParse (env: BALANCE_PARSE) - regex for find balance from sms (default for rostelecom)
-	BalanceParse = regexp.MustCompile(`^.*составляет ([0-9]+(\.[0-9]+)?) руб.*$`)
+	BalanceParse = regexp.MustCompile(`^.*составляет (-?[0-9]+(\.[0-9]+)?) руб.*$`)
 	// IntervalReadSms (env: INTERVAL_READ_SMS) - Interval read sms in seconds
 	IntervalReadSms int64 = 10
 	// IntervalCheckBalance (env: INTERVAL_CHECK_BALANCE) - interval check balance in seconds
