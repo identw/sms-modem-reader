@@ -197,7 +197,8 @@ func readSmsByTimer(so *sms.SmsOperator) {
 			so.Init()
 			continue
 		}
-		
+		promReadSmsLastStatus.Set(0)
+
 		for k, v := range so.Messages {
 			log.Print(v)
 
